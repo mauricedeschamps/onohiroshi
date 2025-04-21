@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>視覚障がい者支援アプリ</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            height: 100vh;
+            gap: 5px;
+            padding: 5px;
+            box-sizing: border-box;
+        }
+        
+        .btn {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.1s, opacity 0.2s;
+            user-select: none;
+            -webkit-user-select: none;
+            outline: none;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .btn:active {
+            transform: scale(0.98);
+            opacity: 0.9;
+        }
+        
+        #emergency {
+            background-color: #e74c3c; /* 赤 */
+        }
+        
+        #information {
+            background-color: #3498db; /* 青 */
+        }
+        
+        #daily {
+            background-color: #f1c40f; /* 黄 */
+            color: #333;
+            text-shadow: 1px 1px 2px rgba(255,255,255,0.7);
+        }
+        
+        #communication {
+            background-color: #2ecc71; /* 緑 */
+        }
+        
+        .speech-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+        
+        @media (prefers-reduced-motion) {
+            .btn:active {
+                transform: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button id="emergency" class="btn" aria-label="緊急支援 ボタン">
+            <div>
+                <div class="speech-icon">⚠️</div>
+                <div>緊急支援</div>
+            </div>
+        </button>
+        
+        <button id="information" class="btn" aria-label="情報取得 ボタン">
+            <div>
+                <div class="speech-icon">ℹ️</div>
+                <div>情報取得</div>
+            </div>
+        </button>
+        
+        <button id="daily" class="btn" aria-label="日常生活 ボタン">
+            <div>
+                <div class="speech-icon">☀️</div>
+                <div>日常生活</div>
+            </div>
+        </button>
+        
+        <button id="communication" class="btn" aria-label="コミュニケーション ボタン">
+            <div>
+                <div class="speech-icon">💬</div>
+                <div>コミュニケーション</div>
+            </div>
+        </button>
+    </div>
+
+    <script>
+        // 音声合成API
+        const speech = new (window.SpeechSynthesisUtterance || window.webkitSpeechSynthesisUtterance)();
+        speech.lang = 'ja-JP';
+        speech.rate = 0.9;
+        
+        // ボタン要素
+        const emergencyBtn = document.getElementById('emergency');
+        const informationBtn = document.getElementById('information');
+        const dailyBtn = document.getElementById('daily');
+        const communicationBtn = document.getElementById('communication');
+        
+        // 音声読み上げ関数
+        function speak(text) {
+            if (window.speechSynthesis) {
+                speech.text = text;
+                window.speechSynthesis.cancel(); // 現在の読み上げをキャンセル
+                window.speechSynthesis.speak(speech);
+            }
+        }
+        
+        // バイブレーション機能（対応デバイスのみ）
+        function vibrate(pattern) {
+            if (navigator.vibrate) {
+                navigator.vibrate(pattern);
+            }
+        }
+        
+        // ボタン操作時のフィードバック
+        function buttonFeedback(text) {
+            speak(text);
+            vibrate([100]);
+        }
+        
+        // ボタンイベントリスナー
+        emergencyBtn.addEventListener('click', () => {
+            buttonFeedback("緊急支援です。現在地を読み上げます");
+            // ここに位置情報取得処理を追加
+            setTimeout(() => {
+                speak("現在地は東京都新宿区西新宿1丁目です。最寄りの避難所は300メートル先の区立公園です");
+            }, 800);
+        });
+        
+        informationBtn.addEventListener('click', () => {
+            buttonFeedback("情報取得です。カメラを起動します");
+            // ここにカメラ起動処理を追加
+        });
+        
+        dailyBtn.addEventListener('click', () => {
+            buttonFeedback("日常生活支援です。周囲の明るさを測定します");
+            // ここに明るさセンサー処理を追加
+            setTimeout(() => {
+                speak("周囲は適度な明るさです。現在の時刻は午後3時20分です");
+            }, 800);
+        });
+        
+        communicationBtn.addEventListener('click', () => {
+            buttonFeedback("コミュニケーション支援です。メッセージを読み上げます");
+            // ここに定型文選択処理を追加
+            setTimeout(() => {
+                speak("トイレの場所を教えてください");
+            }, 800);
+        });
+        
+        // 初期読み上げ
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                speak("視覚障がい者支援アプリが起動しました。4つのボタンが利用できます");
+            }, 500);
+        });
+    </script>
+</body>
+</html>
