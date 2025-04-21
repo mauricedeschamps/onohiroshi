@@ -21,6 +21,8 @@
             width: 100vw;
             overflow: hidden;
             background: #f5f5f5;
+            display: flex;
+            flex-direction: column;
         }
         
         .header {
@@ -38,14 +40,18 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.2);
         }
         
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 80px 12px 80px;
+        }
+        
         .container {
             display: grid;
             grid-template-columns: 1fr 1fr;
             grid-template-rows: 1fr 1fr 1fr;
             gap: 12px;
-            padding: 80px 12px 12px;
-            height: 100vh;
-            width: 100%;
+            min-height: calc(100% - 160px);
         }
         
         .call-btn {
@@ -60,7 +66,7 @@
             border: none;
             transition: transform 0.1s;
             padding: 20px 10px;
-            touch-action: manipulation;
+            min-height: 150px;
         }
         
         .call-btn:active {
@@ -113,6 +119,40 @@
             background: rgba(255,255,255,0.5);
         }
         
+        .footer {
+            background: #333;
+            color: white;
+            text-align: center;
+            padding: 15px 0;
+            font-size: 16px;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            line-height: 1.5;
+        }
+        
+        .settings-btn {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #0066CC;
+            color: white;
+            border: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            z-index: 5;
+        }
+        
+        .settings-btn:active {
+            transform: scale(0.95);
+        }
+        
         .modal-overlay {
             display: none;
             position: fixed;
@@ -133,6 +173,8 @@
             border-radius: 20px;
             padding: 25px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            max-height: 80vh;
+            overflow-y: auto;
         }
         
         .modal-title {
@@ -193,7 +235,7 @@
         
         .call-status {
             position: fixed;
-            bottom: 25px;
+            bottom: 160px;
             left: 50%;
             transform: translateX(-50%);
             background: rgba(0,0,0,0.85);
@@ -212,63 +254,72 @@
 <body>
     <div class="header" aria-label="ワンタップ通話">ワンタップ通話</div>
     
-    <div class="container">
-        <!-- ボタン1 (赤) -->
-        <button class="call-btn" data-color="red" id="btn-1" aria-label="連絡先1">
-            <div class="contact-info">
-                <div class="contact-name" id="name-1">未登録</div>
-                <div class="contact-number" id="number-1">タップして設定</div>
-            </div>
-            <button class="edit-btn" aria-label="編集" id="edit-1">✏️</button>
-        </button>
-        
-        <!-- ボタン2 (青) -->
-        <button class="call-btn" data-color="blue" id="btn-2" aria-label="連絡先2">
-            <div class="contact-info">
-                <div class="contact-name" id="name-2">未登録</div>
-                <div class="contact-number" id="number-2">タップして設定</div>
-            </div>
-            <button class="edit-btn" aria-label="編集" id="edit-2">✏️</button>
-        </button>
-        
-        <!-- ボタン3 (黄) -->
-        <button class="call-btn" data-color="yellow" id="btn-3" aria-label="連絡先3">
-            <div class="contact-info">
-                <div class="contact-name" id="name-3">未登録</div>
-                <div class="contact-number" id="number-3">タップして設定</div>
-            </div>
-            <button class="edit-btn" aria-label="編集" id="edit-3">✏️</button>
-        </button>
-        
-        <!-- ボタン4 (緑) -->
-        <button class="call-btn" data-color="green" id="btn-4" aria-label="連絡先4">
-            <div class="contact-info">
-                <div class="contact-name" id="name-4">未登録</div>
-                <div class="contact-number" id="number-4">タップして設定</div>
-            </div>
-            <button class="edit-btn" aria-label="編集" id="edit-4">✏️</button>
-        </button>
-        
-        <!-- ボタン5 (オレンジ) -->
-        <button class="call-btn" data-color="orange" id="btn-5" aria-label="連絡先5">
-            <div class="contact-info">
-                <div class="contact-name" id="name-5">未登録</div>
-                <div class="contact-number" id="number-5">タップして設定</div>
-            </div>
-            <button class="edit-btn" aria-label="編集" id="edit-5">✏️</button>
-        </button>
-        
-        <!-- ボタン6 (紫) -->
-        <button class="call-btn" data-color="purple" id="btn-6" aria-label="連絡先6">
-            <div class="contact-info">
-                <div class="contact-name" id="name-6">未登録</div>
-                <div class="contact-number" id="number-6">タップして設定</div>
-            </div>
-            <button class="edit-btn" aria-label="編集" id="edit-6">✏️</button>
-        </button>
+    <div class="main-content">
+        <div class="container">
+            <!-- ボタン1 (赤) -->
+            <button class="call-btn" data-color="red" id="btn-1" aria-label="連絡先1">
+                <div class="contact-info">
+                    <div class="contact-name" id="name-1">未登録</div>
+                    <div class="contact-number" id="number-1">タップして設定</div>
+                </div>
+                <button class="edit-btn" aria-label="編集" id="edit-1">✏️</button>
+            </button>
+            
+            <!-- ボタン2 (青) -->
+            <button class="call-btn" data-color="blue" id="btn-2" aria-label="連絡先2">
+                <div class="contact-info">
+                    <div class="contact-name" id="name-2">未登録</div>
+                    <div class="contact-number" id="number-2">タップして設定</div>
+                </div>
+                <button class="edit-btn" aria-label="編集" id="edit-2">✏️</button>
+            </button>
+            
+            <!-- ボタン3 (黄) -->
+            <button class="call-btn" data-color="yellow" id="btn-3" aria-label="連絡先3">
+                <div class="contact-info">
+                    <div class="contact-name" id="name-3">未登録</div>
+                    <div class="contact-number" id="number-3">タップして設定</div>
+                </div>
+                <button class="edit-btn" aria-label="編集" id="edit-3">✏️</button>
+            </button>
+            
+            <!-- ボタン4 (緑) -->
+            <button class="call-btn" data-color="green" id="btn-4" aria-label="連絡先4">
+                <div class="contact-info">
+                    <div class="contact-name" id="name-4">未登録</div>
+                    <div class="contact-number" id="number-4">タップして設定</div>
+                </div>
+                <button class="edit-btn" aria-label="編集" id="edit-4">✏️</button>
+            </button>
+            
+            <!-- ボタン5 (オレンジ) -->
+            <button class="call-btn" data-color="orange" id="btn-5" aria-label="連絡先5">
+                <div class="contact-info">
+                    <div class="contact-name" id="name-5">未登録</div>
+                    <div class="contact-number" id="number-5">タップして設定</div>
+                </div>
+                <button class="edit-btn" aria-label="編集" id="edit-5">✏️</button>
+            </button>
+            
+            <!-- ボタン6 (紫) -->
+            <button class="call-btn" data-color="purple" id="btn-6" aria-label="連絡先6">
+                <div class="contact-info">
+                    <div class="contact-name" id="name-6">未登録</div>
+                    <div class="contact-number" id="number-6">タップして設定</div>
+                </div>
+                <button class="edit-btn" aria-label="編集" id="edit-6">✏️</button>
+            </button>
+        </div>
     </div>
     
+    <button class="settings-btn" id="settingsBtn" aria-label="設定">⚙️</button>
+    
     <div class="call-status" id="callStatus"></div>
+    
+    <div class="footer">
+        Contact me.<br>
+        mementomorikatsu@gmail.com
+    </div>
     
     <!-- 編集モーダル -->
     <div id="editModal" class="modal-overlay">
@@ -341,6 +392,12 @@
                         this.openEditModal(i);
                     });
                 }
+                
+                // 設定ボタン
+                document.getElementById('settingsBtn').addEventListener('click', () => {
+                    this.speak('設定画面を開きます');
+                    // ここに設定機能を追加可能
+                });
                 
                 // モーダル操作
                 document.getElementById('saveBtn').addEventListener('click', () => this.saveContact());
