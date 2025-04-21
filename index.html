@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ワンタップ通話</title>
+    <title>安全確認型ワンタップ通話</title>
     <style>
         * {
             margin: 0;
@@ -233,19 +233,17 @@
             color: white;
         }
         
-        .save-btn {
+        .confirm-btn {
             background: #00AA55;
             color: white;
         }
         
-        .delete-btn {
-            background: #FF4444;
-            color: white;
+        .call-confirm-modal .modal-actions {
+            flex-direction: column;
         }
         
-        .edit-contact-btn {
-            background: #4488FF;
-            color: white;
+        .call-confirm-modal .modal-btn {
+            margin-bottom: 10px;
         }
         
         .contact-list {
@@ -274,23 +272,7 @@
             color: #666;
         }
         
-        .contact-item-actions {
-            display: flex;
-            gap: 8px;
-        }
-        
-        .contact-item-btn {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            border: none;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 16px;
-        }
-        
-        .call-status {
+        .status-message {
             position: fixed;
             bottom: 160px;
             left: 50%;
@@ -309,7 +291,7 @@
     </style>
 </head>
 <body>
-    <div class="header" aria-label="ワンタップ通話">ワンタップ通話</div>
+    <div class="header" aria-label="安全確認型ワンタップ通話">安全確認型ワンタップ通話</div>
     
     <div class="main-content">
         <div class="container">
@@ -322,6 +304,7 @@
                 <button class="edit-btn" aria-label="編集" id="edit-1">✏️</button>
             </button>
             
+            <!-- ボタン2-6も同様に追加 -->
             <button class="call-btn" data-color="blue" id="btn-2" aria-label="連絡先2">
                 <div class="contact-info">
                     <div class="contact-name" id="name-2">未登録</div>
@@ -366,7 +349,7 @@
     
     <button class="settings-btn" id="settingsBtn" aria-label="設定">⚙️</button>
     
-    <div class="call-status" id="callStatus"></div>
+    <div class="status-message" id="statusMessage"></div>
     
     <div class="footer">
         Contact me<br>
@@ -387,7 +370,22 @@
             </div>
             <div class="modal-actions">
                 <button class="modal-btn cancel-btn" id="cancelBtn" aria-label="キャンセル">キャンセル</button>
-                <button class="modal-btn save-btn" id="saveBtn" aria-label="保存">保存</button>
+                <button class="modal-btn confirm-btn" id="saveBtn" aria-label="保存">保存</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 通話確認モーダル -->
+    <div id="callConfirmModal" class="modal-overlay call-confirm-modal">
+        <div class="modal-content">
+            <div class="modal-title" id="confirmCallTitle">通話確認</div>
+            <div class="contact-info" style="text-align: center; margin-bottom: 20px;">
+                <div class="contact-name" id="confirmName"></div>
+                <div class="contact-number" id="confirmNumber"></div>
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn confirm-btn" id="confirmCallBtn" aria-label="発信">発信</button>
+                <button class="modal-btn cancel-btn" id="cancelCallBtn" aria-label="キャンセル">キャンセル</button>
             </div>
         </div>
     </div>
@@ -397,7 +395,7 @@
         <div class="modal-content">
             <div class="modal-title">連絡先一覧</div>
             <div class="contact-list" id="contactList">
-                <!-- 連絡先一覧がここに動的に追加されます -->
+                <!-- 連絡先一覧が動的に追加されます -->
             </div>
             <div class="modal-actions">
                 <button class="modal-btn cancel-btn" id="closeSettingsBtn" aria-label="閉じる">閉じる</button>
@@ -407,7 +405,7 @@
 
     <script>
         // アプリケーションのメイン機能
-        const DirectCallApp = {
+        const SafeCallApp = {
             currentContact: null,
             isCalling: false,
             speech: new (window.SpeechSynthesisUtterance || window.webkitSpeechSynthesisUtterance)(),
@@ -427,7 +425,7 @@
             
             loadContacts() {
                 for (let i = 1; i <= 6; i++) {
-                    const saved = localStorage.getItem(`direct_call_contact_${i}`);
+                    const saved = localStorage.getItem(`safe_call_contact_${i}`);
                     if (saved) {
                         const contact = JSON.parse(saved);
                         this.updateContactDisplay(i, contact.name, contact.number);
@@ -444,7 +442,6 @@
                     const editBtn = document.getElementById(`edit-${i}`);
                     
                     btn.addEventListener('click', () => {
-                        if (this.isCalling) return;
                         this.handleCallAction(i);
                     });
                     
@@ -457,6 +454,15 @@
                 // 設定ボタン
                 document.getElementById('settingsBtn').addEventListener('click', () => {
                     this.openSettingsModal();
+                });
+                
+                // 通話確認モーダル
+                document.getElementById('confirmCallBtn').addEventListener('click', () => {
+                    this.initiateCall();
+                });
+                
+                document.getElementById('cancelCallBtn').addEventListener('click', () => {
+                    this.closeCallConfirmModal();
                 });
                 
                 // モーダル操作
@@ -477,14 +483,34 @@
                     return;
                 }
                 
-                this.initiateCall(contactId, name, number);
+                this.currentContact = contactId;
+                this.openCallConfirmModal(name, number);
             },
             
-            initiateCall(contactId, name, number) {
+            openCallConfirmModal(name, number) {
+                document.getElementById('confirmName').textContent = name;
+                document.getElementById('confirmNumber').textContent = number;
+                document.getElementById('callConfirmModal').style.display = 'flex';
+                this.speak(`${name}に電話をかけます。発信するには確認ボタンを押してください。キャンセルするにはキャンセルボタンを押してください。`);
+            },
+            
+            closeCallConfirmModal() {
+                document.getElementById('callConfirmModal').style.display = 'none';
+                this.speak('通話をキャンセルしました');
+            },
+            
+            initiateCall() {
+                if (this.isCalling) return;
+                
+                const number = document.getElementById(`number-${this.currentContact}`).textContent;
+                const name = document.getElementById(`name-${this.currentContact}`).textContent;
+                
                 this.isCalling = true;
-                this.showCallStatus(`${name}に発信します`);
+                this.showStatusMessage(`${name}に発信します`);
                 this.vibrate([100, 50, 100]);
                 this.speak(`ただいま${name}につなぎます`);
+                
+                this.closeCallConfirmModal();
                 
                 setTimeout(() => {
                     window.location.href = `tel:${number}`;
@@ -527,8 +553,8 @@
                             <div class="contact-item-number">${number}</div>
                         </div>
                         <div class="contact-item-actions">
-                            <button class="contact-item-btn edit-contact-btn" data-id="${i}" aria-label="編集" style="background: ${this.getColorCode(color)}">✏️</button>
-                            ${name !== '未登録' ? `<button class="contact-item-btn delete-btn" data-id="${i}" aria-label="削除">🗑️</button>` : ''}
+                            <button class="modal-btn edit-contact-btn" data-id="${i}" aria-label="編集" style="background: ${this.getColorCode(color)}">編集</button>
+                            ${name !== '未登録' ? `<button class="modal-btn delete-btn" data-id="${i}" aria-label="削除">削除</button>` : ''}
                         </div>
                     `;
                     
@@ -566,7 +592,7 @@
             },
             
             deleteContact(contactId) {
-                localStorage.removeItem(`direct_call_contact_${contactId}`);
+                localStorage.removeItem(`safe_call_contact_${contactId}`);
                 this.updateContactDisplay(contactId, '未登録', 'タップして設定');
                 this.renderContactList();
                 this.speak('連絡先を削除しました');
@@ -591,7 +617,7 @@
                 }
                 
                 const contactData = { name, number };
-                localStorage.setItem(`direct_call_contact_${this.currentContact}`, JSON.stringify(contactData));
+                localStorage.setItem(`safe_call_contact_${this.currentContact}`, JSON.stringify(contactData));
                 
                 this.updateContactDisplay(this.currentContact, name, number);
                 this.closeEditModal();
@@ -607,8 +633,8 @@
                 document.getElementById('editModal').style.display = 'none';
             },
             
-            showCallStatus(message) {
-                const statusEl = document.getElementById('callStatus');
+            showStatusMessage(message) {
+                const statusEl = document.getElementById('statusMessage');
                 statusEl.textContent = message;
                 statusEl.style.display = 'block';
                 
@@ -633,14 +659,14 @@
             
             announceReady() {
                 setTimeout(() => {
-                    this.speak('ワンタップ通話アプリの準備ができました。登録済みの連絡先ボタンを押すとすぐに発信できます');
+                    this.speak('安全確認型ワンタップ通話アプリの準備ができました。登録済みの連絡先ボタンを押すと確認画面が表示されます');
                 }, 800);
             }
         };
         
         // アプリ起動
         document.addEventListener('DOMContentLoaded', () => {
-            DirectCallApp.init();
+            SafeCallApp.init();
         });
     </script>
 </body>
