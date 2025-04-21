@@ -28,7 +28,6 @@
         .header {
             background: #0066CC;
             color: white;
-            text-align: center;
             padding: 18px 0;
             font-size: 24px;
             font-weight: bold;
@@ -38,6 +37,23 @@
             z-index: 10;
             height: 70px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+        
+        .header-title {
+            flex: 1;
+            text-align: center;
+        }
+        
+        .edit-btn {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 20px;
+            padding: 10px;
         }
         
         .main-content {
@@ -198,10 +214,25 @@
             background: #00AA55;
             color: white;
         }
+        
+        .contact-selector {
+            margin-bottom: 20px;
+        }
+        
+        .contact-selector select {
+            width: 100%;
+            padding: 12px;
+            font-size: 18px;
+            border-radius: 8px;
+            border: 2px solid #ddd;
+        }
     </style>
 </head>
 <body>
-    <div class="header">音声確認式ワンタップ通話</div>
+    <div class="header">
+        <div class="header-title">音声確認式ワンタップ通話</div>
+        <button class="edit-btn" id="editModeBtn">編集</button>
+    </div>
     
     <div class="main-content">
         <div class="container">
@@ -258,6 +289,18 @@
     
     <div id="editModal" class="modal-overlay">
         <div class="modal-content">
+            <div class="contact-selector">
+                <label for="contactSelect">編集する連絡先</label>
+                <select id="contactSelect">
+                    <option value="1">連絡先1</option>
+                    <option value="2">連絡先2</option>
+                    <option value="3">連絡先3</option>
+                    <option value="4">連絡先4</option>
+                    <option value="5">連絡先5</option>
+                    <option value="6">連絡先6</option>
+                </select>
+            </div>
+            
             <div class="input-group">
                 <label for="editName">表示名</label>
                 <input type="text" id="editName" placeholder="例: 家族">
@@ -279,8 +322,6 @@
             isCalling: false,
             speech: new (window.SpeechSynthesisUtterance || window.webkitSpeechSynthesisUtterance)(),
             touchTimer: null,
-            lastTapTime: 0,
-            tapCount: 0,
             
             init() {
                 this.setupSpeech();
@@ -308,6 +349,7 @@
             },
             
             setupEventListeners() {
+                // 通話ボタン
                 for (let i = 1; i <= 6; i++) {
                     const btn = document.getElementById(`btn-${i}`);
                     btn.addEventListener('touchstart', (e) => this.handleTouchStart(i, e));
@@ -315,8 +357,13 @@
                     btn.addEventListener('click', (e) => e.preventDefault());
                 }
                 
+                // 編集モードボタン
+                document.getElementById('editModeBtn').addEventListener('click', () => this.openEditModal());
+                
+                // モーダル操作
                 document.getElementById('saveBtn').addEventListener('click', () => this.saveContact());
                 document.getElementById('cancelBtn').addEventListener('click', () => this.closeEditModal());
+                document.getElementById('contactSelect').addEventListener('change', (e) => this.loadContactData(e.target.value));
             },
             
             handleTouchStart(contactId, e) {
@@ -328,31 +375,14 @@
             handleTouchEnd(contactId, e) {
                 e.preventDefault();
                 clearTimeout(this.touchTimer);
-                
-                const currentTime = new Date().getTime();
-                const tapLength = currentTime - this.lastTapTime;
-                
-                if (this.tapCount > 0 && tapLength < 500) {
-                    clearTimeout(this.touchTimer);
-                    this.tapCount = 0;
-                    this.handleDoubleTap(contactId);
-                } else {
-                    this.tapCount = 1;
-                    this.lastTapTime = currentTime;
-                    setTimeout(() => {
-                        if (this.tapCount === 1) {
-                            this.handleSingleTap(contactId);
-                            this.tapCount = 0;
-                        }
-                    }, 500);
-                }
+                this.handleSingleTap(contactId);
             },
             
             handleSingleTap(contactId) {
                 const name = document.getElementById(`name-${contactId}`).textContent;
                 
                 if (name === '未登録') {
-                    this.openEditModal(contactId);
+                    this.speak('未登録の連絡先です');
                     return;
                 }
                 
@@ -364,7 +394,7 @@
                 const number = document.getElementById(`number-${contactId}`).textContent;
                 
                 if (name === '未登録') {
-                    this.openEditModal(contactId);
+                    this.speak('未登録の連絡先です');
                     return;
                 }
                 
@@ -381,28 +411,22 @@
                 }, 1000);
             },
             
-            handleDoubleTap(contactId) {
-                const name = document.getElementById(`name-${contactId}`).textContent;
-                
-                if (name === '未登録') {
-                    this.openEditModal(contactId);
-                } else {
-                    this.speak(`${name}を編集します`);
-                    this.openEditModal(contactId);
-                }
+            openEditModal() {
+                document.getElementById('editModal').style.display = 'flex';
+                this.loadContactData(1); // デフォルトで連絡先1を読み込み
             },
             
-            openEditModal(contactId) {
+            loadContactData(contactId) {
                 this.currentContact = contactId;
                 const name = document.getElementById(`name-${contactId}`).textContent;
                 const number = document.getElementById(`number-${contactId}`).textContent;
                 
                 document.getElementById('editName').value = name === '未登録' ? '' : name;
                 document.getElementById('editNumber').value = number === 'タップして確認' ? '' : number;
-                document.getElementById('editModal').style.display = 'flex';
             },
             
             saveContact() {
+                const contactId = this.currentContact;
                 const name = document.getElementById('editName').value.trim();
                 let number = document.getElementById('editNumber').value.trim().replace(/\D+/g, '');
                 
@@ -417,9 +441,9 @@
                 }
                 
                 const contactData = { name, number };
-                localStorage.setItem(`voice_call_contact_${this.currentContact}`, JSON.stringify(contactData));
+                localStorage.setItem(`voice_call_contact_${contactId}`, JSON.stringify(contactData));
                 
-                this.updateContactDisplay(this.currentContact, name, number);
+                this.updateContactDisplay(contactId, name, number);
                 this.closeEditModal();
                 this.speak(`${name}を保存しました`);
             },
@@ -459,7 +483,7 @@
             
             announceReady() {
                 setTimeout(() => {
-                    this.speak('音声確認式ワンタップ通話アプリの準備ができました。連絡先ボタンをタップすると登録名を読み上げます。長押しで発信、ダブルタップで編集します。');
+                    this.speak('音声確認式ワンタップ通話アプリの準備ができました。連絡先ボタンをタップすると登録名を読み上げます。長押しで発信します。編集はヘッダーの編集ボタンから行えます。');
                 }, 800);
             }
         };
