@@ -238,10 +238,56 @@
             color: white;
         }
         
-        .delete-all-btn {
+        .delete-btn {
             background: #FF4444;
             color: white;
-            margin-top: 15px;
+        }
+        
+        .edit-contact-btn {
+            background: #4488FF;
+            color: white;
+        }
+        
+        .contact-list {
+            margin-bottom: 20px;
+        }
+        
+        .contact-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .contact-item-info {
+            flex: 1;
+        }
+        
+        .contact-item-name {
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        .contact-item-number {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .contact-item-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .contact-item-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 16px;
         }
         
         .call-status {
@@ -349,11 +395,9 @@
     <!-- 設定モーダル -->
     <div id="settingsModal" class="modal-overlay">
         <div class="modal-content">
-            <div class="modal-title">設定</div>
-            <div class="modal-actions">
-                <button class="modal-btn delete-all-btn" id="deleteAllBtn" aria-label="全連絡先を削除">
-                    全連絡先を削除
-                </button>
+            <div class="modal-title">連絡先一覧</div>
+            <div class="contact-list" id="contactList">
+                <!-- 連絡先一覧がここに動的に追加されます -->
             </div>
             <div class="modal-actions">
                 <button class="modal-btn cancel-btn" id="closeSettingsBtn" aria-label="閉じる">閉じる</button>
@@ -415,19 +459,10 @@
                     this.openSettingsModal();
                 });
                 
-                // 全削除ボタン
-                document.getElementById('deleteAllBtn').addEventListener('click', () => {
-                    this.confirmDeleteAll();
-                });
-                
-                // 設定モーダル閉じる
-                document.getElementById('closeSettingsBtn').addEventListener('click', () => {
-                    this.closeSettingsModal();
-                });
-                
                 // モーダル操作
                 document.getElementById('saveBtn').addEventListener('click', () => this.saveContact());
                 document.getElementById('cancelBtn').addEventListener('click', () => this.closeEditModal());
+                document.getElementById('closeSettingsBtn').addEventListener('click', () => this.closeSettingsModal());
                 
                 // コンテキストメニュー禁止
                 document.addEventListener('contextmenu', (e) => e.preventDefault());
@@ -470,38 +505,75 @@
             },
             
             openSettingsModal() {
+                this.renderContactList();
                 document.getElementById('settingsModal').style.display = 'flex';
-                this.speak('設定画面を開きました');
+                this.speak('設定画面を開きました。登録済みの連絡先一覧が表示されます');
+            },
+            
+            renderContactList() {
+                const contactList = document.getElementById('contactList');
+                contactList.innerHTML = '';
+                
+                for (let i = 1; i <= 6; i++) {
+                    const name = document.getElementById(`name-${i}`).textContent;
+                    const number = document.getElementById(`number-${i}`).textContent;
+                    const color = document.getElementById(`btn-${i}`).getAttribute('data-color');
+                    
+                    const contactItem = document.createElement('div');
+                    contactItem.className = 'contact-item';
+                    contactItem.innerHTML = `
+                        <div class="contact-item-info">
+                            <div class="contact-item-name">${name}</div>
+                            <div class="contact-item-number">${number}</div>
+                        </div>
+                        <div class="contact-item-actions">
+                            <button class="contact-item-btn edit-contact-btn" data-id="${i}" aria-label="編集" style="background: ${this.getColorCode(color)}">✏️</button>
+                            ${name !== '未登録' ? `<button class="contact-item-btn delete-btn" data-id="${i}" aria-label="削除">🗑️</button>` : ''}
+                        </div>
+                    `;
+                    
+                    contactList.appendChild(contactItem);
+                }
+                
+                // 編集ボタンイベント
+                document.querySelectorAll('.edit-contact-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const contactId = e.currentTarget.getAttribute('data-id');
+                        this.closeSettingsModal();
+                        this.openEditModal(contactId);
+                    });
+                });
+                
+                // 削除ボタンイベント
+                document.querySelectorAll('.delete-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const contactId = e.currentTarget.getAttribute('data-id');
+                        this.deleteContact(contactId);
+                    });
+                });
+            },
+            
+            getColorCode(colorName) {
+                const colors = {
+                    'red': '#FF4444',
+                    'blue': '#4488FF',
+                    'yellow': '#FFCC00',
+                    'green': '#00AA55',
+                    'orange': '#FF8800',
+                    'purple': '#AA44FF'
+                };
+                return colors[colorName] || '#4488FF';
+            },
+            
+            deleteContact(contactId) {
+                localStorage.removeItem(`direct_call_contact_${contactId}`);
+                this.updateContactDisplay(contactId, '未登録', 'タップして設定');
+                this.renderContactList();
+                this.speak('連絡先を削除しました');
             },
             
             closeSettingsModal() {
                 document.getElementById('settingsModal').style.display = 'none';
-                this.speak('設定画面を閉じました');
-            },
-            
-            confirmDeleteAll() {
-                this.speak('本当に全連絡先を削除しますか？削除するにはもう一度ボタンを押してください');
-                
-                const deleteBtn = document.getElementById('deleteAllBtn');
-                deleteBtn.textContent = '本当に削除しますか？';
-                
-                const handler = () => {
-                    this.deleteAllContacts();
-                    deleteBtn.textContent = '全連絡先を削除';
-                    deleteBtn.addEventListener('click', this.confirmDeleteAll);
-                    this.closeSettingsModal();
-                };
-                
-                deleteBtn.removeEventListener('click', this.confirmDeleteAll);
-                deleteBtn.addEventListener('click', handler, { once: true });
-            },
-            
-            deleteAllContacts() {
-                for (let i = 1; i <= 6; i++) {
-                    localStorage.removeItem(`direct_call_contact_${i}`);
-                    this.updateContactDisplay(i, '未登録', 'タップして設定');
-                }
-                this.speak('全連絡先を削除しました');
             },
             
             saveContact() {
