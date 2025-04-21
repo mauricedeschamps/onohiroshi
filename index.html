@@ -131,6 +131,11 @@
             line-height: 1.5;
         }
         
+        .footer a {
+            color: #4DA6FF;
+            text-decoration: none;
+        }
+        
         .settings-btn {
             position: fixed;
             bottom: 90px;
@@ -233,6 +238,12 @@
             color: white;
         }
         
+        .delete-all-btn {
+            background: #FF4444;
+            color: white;
+            margin-top: 15px;
+        }
+        
         .call-status {
             position: fixed;
             bottom: 160px;
@@ -256,7 +267,7 @@
     
     <div class="main-content">
         <div class="container">
-            <!-- ボタン1 (赤) -->
+            <!-- 6つの連絡先ボタン -->
             <button class="call-btn" data-color="red" id="btn-1" aria-label="連絡先1">
                 <div class="contact-info">
                     <div class="contact-name" id="name-1">未登録</div>
@@ -265,7 +276,6 @@
                 <button class="edit-btn" aria-label="編集" id="edit-1">✏️</button>
             </button>
             
-            <!-- ボタン2 (青) -->
             <button class="call-btn" data-color="blue" id="btn-2" aria-label="連絡先2">
                 <div class="contact-info">
                     <div class="contact-name" id="name-2">未登録</div>
@@ -274,7 +284,6 @@
                 <button class="edit-btn" aria-label="編集" id="edit-2">✏️</button>
             </button>
             
-            <!-- ボタン3 (黄) -->
             <button class="call-btn" data-color="yellow" id="btn-3" aria-label="連絡先3">
                 <div class="contact-info">
                     <div class="contact-name" id="name-3">未登録</div>
@@ -283,7 +292,6 @@
                 <button class="edit-btn" aria-label="編集" id="edit-3">✏️</button>
             </button>
             
-            <!-- ボタン4 (緑) -->
             <button class="call-btn" data-color="green" id="btn-4" aria-label="連絡先4">
                 <div class="contact-info">
                     <div class="contact-name" id="name-4">未登録</div>
@@ -292,7 +300,6 @@
                 <button class="edit-btn" aria-label="編集" id="edit-4">✏️</button>
             </button>
             
-            <!-- ボタン5 (オレンジ) -->
             <button class="call-btn" data-color="orange" id="btn-5" aria-label="連絡先5">
                 <div class="contact-info">
                     <div class="contact-name" id="name-5">未登録</div>
@@ -301,7 +308,6 @@
                 <button class="edit-btn" aria-label="編集" id="edit-5">✏️</button>
             </button>
             
-            <!-- ボタン6 (紫) -->
             <button class="call-btn" data-color="purple" id="btn-6" aria-label="連絡先6">
                 <div class="contact-info">
                     <div class="contact-name" id="name-6">未登録</div>
@@ -317,8 +323,8 @@
     <div class="call-status" id="callStatus"></div>
     
     <div class="footer">
-        Contact me.<br>
-        mementomorikatsu@gmail.com
+        Contact me<br>
+        <a href="mailto:mementomorikatsu@gmail.com?subject=ワンタップ通話アプリについて" aria-label="メールを送信">mementomorikatsu@gmail.com</a>
     </div>
     
     <!-- 編集モーダル -->
@@ -339,15 +345,29 @@
             </div>
         </div>
     </div>
+    
+    <!-- 設定モーダル -->
+    <div id="settingsModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-title">設定</div>
+            <div class="modal-actions">
+                <button class="modal-btn delete-all-btn" id="deleteAllBtn" aria-label="全連絡先を削除">
+                    全連絡先を削除
+                </button>
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn cancel-btn" id="closeSettingsBtn" aria-label="閉じる">閉じる</button>
+            </div>
+        </div>
+    </div>
 
     <script>
-        // アプリケーションの状態管理
+        // アプリケーションのメイン機能
         const DirectCallApp = {
             currentContact: null,
             isCalling: false,
             speech: new (window.SpeechSynthesisUtterance || window.webkitSpeechSynthesisUtterance)(),
             
-            // 初期化
             init() {
                 this.setupSpeech();
                 this.loadContacts();
@@ -355,38 +375,35 @@
                 this.announceReady();
             },
             
-            // 音声設定
             setupSpeech() {
                 this.speech.lang = 'ja-JP';
                 this.speech.rate = 0.9;
                 this.speech.volume = 1;
             },
             
-            // 連絡先読み込み
             loadContacts() {
                 for (let i = 1; i <= 6; i++) {
                     const saved = localStorage.getItem(`direct_call_contact_${i}`);
                     if (saved) {
                         const contact = JSON.parse(saved);
                         this.updateContactDisplay(i, contact.name, contact.number);
+                    } else {
+                        this.updateContactDisplay(i, '未登録', 'タップして設定');
                     }
                 }
             },
             
-            // イベントリスナー設定
             setupEventListeners() {
                 // 通話ボタン
                 for (let i = 1; i <= 6; i++) {
                     const btn = document.getElementById(`btn-${i}`);
                     const editBtn = document.getElementById(`edit-${i}`);
                     
-                    // 通話ボタン
                     btn.addEventListener('click', () => {
                         if (this.isCalling) return;
                         this.handleCallAction(i);
                     });
                     
-                    // 編集ボタン (イベントバブリング防止)
                     editBtn.addEventListener('click', (e) => {
                         e.stopPropagation();
                         this.openEditModal(i);
@@ -395,8 +412,17 @@
                 
                 // 設定ボタン
                 document.getElementById('settingsBtn').addEventListener('click', () => {
-                    this.speak('設定画面を開きます');
-                    // ここに設定機能を追加可能
+                    this.openSettingsModal();
+                });
+                
+                // 全削除ボタン
+                document.getElementById('deleteAllBtn').addEventListener('click', () => {
+                    this.confirmDeleteAll();
+                });
+                
+                // 設定モーダル閉じる
+                document.getElementById('closeSettingsBtn').addEventListener('click', () => {
+                    this.closeSettingsModal();
                 });
                 
                 // モーダル操作
@@ -407,7 +433,6 @@
                 document.addEventListener('contextmenu', (e) => e.preventDefault());
             },
             
-            // 通話処理
             handleCallAction(contactId) {
                 const number = document.getElementById(`number-${contactId}`).textContent;
                 const name = document.getElementById(`name-${contactId}`).textContent;
@@ -420,23 +445,18 @@
                 this.initiateCall(contactId, name, number);
             },
             
-            // 発信開始
             initiateCall(contactId, name, number) {
                 this.isCalling = true;
-                
-                // フィードバック
                 this.showCallStatus(`${name}に発信します`);
                 this.vibrate([100, 50, 100]);
                 this.speak(`ただいま${name}につなぎます`);
                 
-                // 発信処理 (1秒遅延)
                 setTimeout(() => {
                     window.location.href = `tel:${number}`;
                     this.isCalling = false;
                 }, 1000);
             },
             
-            // 編集モーダルを開く
             openEditModal(contactId) {
                 this.currentContact = contactId;
                 const name = document.getElementById(`name-${contactId}`).textContent;
@@ -449,12 +469,45 @@
                 this.speak('連絡先を編集します');
             },
             
-            // 連絡先を保存
+            openSettingsModal() {
+                document.getElementById('settingsModal').style.display = 'flex';
+                this.speak('設定画面を開きました');
+            },
+            
+            closeSettingsModal() {
+                document.getElementById('settingsModal').style.display = 'none';
+                this.speak('設定画面を閉じました');
+            },
+            
+            confirmDeleteAll() {
+                this.speak('本当に全連絡先を削除しますか？削除するにはもう一度ボタンを押してください');
+                
+                const deleteBtn = document.getElementById('deleteAllBtn');
+                deleteBtn.textContent = '本当に削除しますか？';
+                
+                const handler = () => {
+                    this.deleteAllContacts();
+                    deleteBtn.textContent = '全連絡先を削除';
+                    deleteBtn.addEventListener('click', this.confirmDeleteAll);
+                    this.closeSettingsModal();
+                };
+                
+                deleteBtn.removeEventListener('click', this.confirmDeleteAll);
+                deleteBtn.addEventListener('click', handler, { once: true });
+            },
+            
+            deleteAllContacts() {
+                for (let i = 1; i <= 6; i++) {
+                    localStorage.removeItem(`direct_call_contact_${i}`);
+                    this.updateContactDisplay(i, '未登録', 'タップして設定');
+                }
+                this.speak('全連絡先を削除しました');
+            },
+            
             saveContact() {
                 const name = document.getElementById('editName').value.trim();
                 let number = document.getElementById('editNumber').value.trim().replace(/\D+/g, '');
                 
-                // バリデーション
                 if (!name) {
                     this.speak('名前を入力してください');
                     return;
@@ -465,28 +518,23 @@
                     return;
                 }
                 
-                // 保存
                 const contactData = { name, number };
                 localStorage.setItem(`direct_call_contact_${this.currentContact}`, JSON.stringify(contactData));
                 
-                // 表示更新
                 this.updateContactDisplay(this.currentContact, name, number);
                 this.closeEditModal();
                 this.speak(`${name}の連絡先を保存しました`);
             },
             
-            // 連絡先表示を更新
             updateContactDisplay(contactId, name, number) {
                 document.getElementById(`name-${contactId}`).textContent = name;
                 document.getElementById(`number-${contactId}`).textContent = number;
             },
             
-            // モーダルを閉じる
             closeEditModal() {
                 document.getElementById('editModal').style.display = 'none';
             },
             
-            // 通話ステータス表示
             showCallStatus(message) {
                 const statusEl = document.getElementById('callStatus');
                 statusEl.textContent = message;
@@ -497,7 +545,6 @@
                 }, 3000);
             },
             
-            // 音声読み上げ
             speak(text) {
                 if (window.speechSynthesis) {
                     this.speech.text = text;
@@ -506,14 +553,12 @@
                 }
             },
             
-            // バイブレーション
             vibrate(pattern) {
                 if (navigator.vibrate) {
                     navigator.vibrate(pattern);
                 }
             },
             
-            // 起動アナウンス
             announceReady() {
                 setTimeout(() => {
                     this.speak('ワンタップ通話アプリの準備ができました。登録済みの連絡先ボタンを押すとすぐに発信できます');
