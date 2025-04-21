@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ワンタップ通話</title>
     <style>
-        /* リセットと基本設定 */
         * {
             margin: 0;
             padding: 0;
@@ -17,14 +16,13 @@
         }
         
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             height: 100vh;
             width: 100vw;
             overflow: hidden;
-            background: #f8f8f8;
+            background: #f5f5f5;
         }
         
-        /* ヘッダー */
         .header {
             background: #0066CC;
             color: white;
@@ -40,7 +38,6 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.2);
         }
         
-        /* メインコンテナ */
         .container {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -51,7 +48,6 @@
             width: 100%;
         }
         
-        /* 通話ボタン */
         .call-btn {
             background: white;
             border-radius: 20px;
@@ -62,17 +58,15 @@
             position: relative;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
             border: none;
-            transition: transform 0.1s, opacity 0.2s;
+            transition: transform 0.1s;
             padding: 20px 10px;
-            overflow: hidden;
+            touch-action: manipulation;
         }
         
         .call-btn:active {
             transform: scale(0.97);
-            opacity: 0.9;
         }
         
-        /* ボタンカラー */
         .call-btn[data-color="red"] { background: #FF4444; color: white; }
         .call-btn[data-color="blue"] { background: #4488FF; color: white; }
         .call-btn[data-color="yellow"] { background: #FFCC00; color: #333; }
@@ -80,7 +74,6 @@
         .call-btn[data-color="orange"] { background: #FF8800; color: white; }
         .call-btn[data-color="purple"] { background: #AA44FF; color: white; }
         
-        /* ボタン内テキスト */
         .contact-info {
             width: 90%;
             text-align: center;
@@ -97,10 +90,8 @@
         .contact-number {
             font-size: 20px;
             word-break: break-all;
-            opacity: 0.95;
         }
         
-        /* 編集ボタン */
         .edit-btn {
             position: absolute;
             top: 12px;
@@ -116,15 +107,12 @@
             align-items: center;
             font-size: 20px;
             z-index: 2;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
         
         .edit-btn:active {
             background: rgba(255,255,255,0.5);
-            transform: scale(0.95);
         }
         
-        /* 編集モーダル */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -145,12 +133,6 @@
             border-radius: 20px;
             padding: 25px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-            animation: modalOpen 0.3s ease-out;
-        }
-        
-        @keyframes modalOpen {
-            from { transform: scale(0.9); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
         }
         
         .modal-title {
@@ -170,7 +152,6 @@
             margin-bottom: 8px;
             font-weight: bold;
             font-size: 18px;
-            color: #333;
         }
         
         .input-group input {
@@ -198,11 +179,6 @@
             font-size: 18px;
             cursor: pointer;
             flex: 1;
-            transition: opacity 0.2s;
-        }
-        
-        .modal-btn:active {
-            opacity: 0.8;
         }
         
         .cancel-btn {
@@ -215,7 +191,6 @@
             color: white;
         }
         
-        /* 通話確認メッセージ */
         .call-status {
             position: fixed;
             bottom: 25px;
@@ -231,15 +206,6 @@
             z-index: 50;
             max-width: 90%;
             text-align: center;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            animation: statusFade 3s ease-out;
-        }
-        
-        @keyframes statusFade {
-            0% { opacity: 0; transform: translateX(-50%) translateY(20px); }
-            10% { opacity: 1; transform: translateX(-50%) translateY(0); }
-            90% { opacity: 1; transform: translateX(-50%) translateY(0); }
-            100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
         }
     </style>
 </head>
@@ -324,12 +290,13 @@
     </div>
 
     <script>
-        // アプリケーションの状態と機能
+        // アプリケーションの状態管理
         const DirectCallApp = {
             currentContact: null,
             isCalling: false,
             speech: new (window.SpeechSynthesisUtterance || window.webkitSpeechSynthesisUtterance)(),
             
+            // 初期化
             init() {
                 this.setupSpeech();
                 this.loadContacts();
@@ -337,12 +304,14 @@
                 this.announceReady();
             },
             
+            // 音声設定
             setupSpeech() {
                 this.speech.lang = 'ja-JP';
                 this.speech.rate = 0.9;
                 this.speech.volume = 1;
             },
             
+            // 連絡先読み込み
             loadContacts() {
                 for (let i = 1; i <= 6; i++) {
                     const saved = localStorage.getItem(`direct_call_contact_${i}`);
@@ -353,6 +322,7 @@
                 }
             },
             
+            // イベントリスナー設定
             setupEventListeners() {
                 // 通話ボタン
                 for (let i = 1; i <= 6; i++) {
@@ -368,7 +338,6 @@
                     // 編集ボタン (イベントバブリング防止)
                     editBtn.addEventListener('click', (e) => {
                         e.stopPropagation();
-                        e.preventDefault();
                         this.openEditModal(i);
                     });
                 }
@@ -381,18 +350,20 @@
                 document.addEventListener('contextmenu', (e) => e.preventDefault());
             },
             
+            // 通話処理
             handleCallAction(contactId) {
-                const numberEl = document.getElementById(`number-${contactId}`);
-                const nameEl = document.getElementById(`name-${contactId}`);
+                const number = document.getElementById(`number-${contactId}`).textContent;
+                const name = document.getElementById(`name-${contactId}`).textContent;
                 
-                if (numberEl.textContent === 'タップして設定') {
+                if (number === 'タップして設定') {
                     this.openEditModal(contactId);
                     return;
                 }
                 
-                this.initiateCall(contactId, nameEl.textContent, numberEl.textContent);
+                this.initiateCall(contactId, name, number);
             },
             
+            // 発信開始
             initiateCall(contactId, name, number) {
                 this.isCalling = true;
                 
@@ -408,6 +379,7 @@
                 }, 1000);
             },
             
+            // 編集モーダルを開く
             openEditModal(contactId) {
                 this.currentContact = contactId;
                 const name = document.getElementById(`name-${contactId}`).textContent;
@@ -420,6 +392,7 @@
                 this.speak('連絡先を編集します');
             },
             
+            // 連絡先を保存
             saveContact() {
                 const name = document.getElementById('editName').value.trim();
                 let number = document.getElementById('editNumber').value.trim().replace(/\D+/g, '');
@@ -445,15 +418,18 @@
                 this.speak(`${name}の連絡先を保存しました`);
             },
             
+            // 連絡先表示を更新
             updateContactDisplay(contactId, name, number) {
                 document.getElementById(`name-${contactId}`).textContent = name;
                 document.getElementById(`number-${contactId}`).textContent = number;
             },
             
+            // モーダルを閉じる
             closeEditModal() {
                 document.getElementById('editModal').style.display = 'none';
             },
             
+            // 通話ステータス表示
             showCallStatus(message) {
                 const statusEl = document.getElementById('callStatus');
                 statusEl.textContent = message;
@@ -464,6 +440,7 @@
                 }, 3000);
             },
             
+            // 音声読み上げ
             speak(text) {
                 if (window.speechSynthesis) {
                     this.speech.text = text;
@@ -472,12 +449,14 @@
                 }
             },
             
+            // バイブレーション
             vibrate(pattern) {
                 if (navigator.vibrate) {
                     navigator.vibrate(pattern);
                 }
             },
             
+            // 起動アナウンス
             announceReady() {
                 setTimeout(() => {
                     this.speak('ワンタップ通話アプリの準備ができました。登録済みの連絡先ボタンを押すとすぐに発信できます');
