@@ -127,7 +127,6 @@
             text-align: center;
         }
         
-        /* 編集モーダル */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -154,6 +153,13 @@
         
         .input-group {
             margin-bottom: 20px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 18px;
+            font-weight: bold;
         }
         
         .input-group input {
@@ -195,47 +201,46 @@
     </style>
 </head>
 <body>
-    <div class="header" aria-label="音声確認式ワンタップ通話">音声確認式ワンタップ通話</div>
+    <div class="header">音声確認式ワンタップ通話</div>
     
     <div class="main-content">
         <div class="container">
-            <!-- 6つの連絡先ボタン -->
-            <button class="contact-btn" data-color="red" id="btn-1" aria-label="連絡先1">
+            <button class="contact-btn" data-color="red" id="btn-1">
                 <div class="contact-info">
                     <div class="contact-name" id="name-1">未登録</div>
                     <div class="contact-number" id="number-1">タップして確認</div>
                 </div>
             </button>
             
-            <button class="contact-btn" data-color="blue" id="btn-2" aria-label="連絡先2">
+            <button class="contact-btn" data-color="blue" id="btn-2">
                 <div class="contact-info">
                     <div class="contact-name" id="name-2">未登録</div>
                     <div class="contact-number" id="number-2">タップして確認</div>
                 </div>
             </button>
             
-            <button class="contact-btn" data-color="yellow" id="btn-3" aria-label="連絡先3">
+            <button class="contact-btn" data-color="yellow" id="btn-3">
                 <div class="contact-info">
                     <div class="contact-name" id="name-3">未登録</div>
                     <div class="contact-number" id="number-3">タップして確認</div>
                 </div>
             </button>
             
-            <button class="contact-btn" data-color="green" id="btn-4" aria-label="連絡先4">
+            <button class="contact-btn" data-color="green" id="btn-4">
                 <div class="contact-info">
                     <div class="contact-name" id="name-4">未登録</div>
                     <div class="contact-number" id="number-4">タップして確認</div>
                 </div>
             </button>
             
-            <button class="contact-btn" data-color="orange" id="btn-5" aria-label="連絡先5">
+            <button class="contact-btn" data-color="orange" id="btn-5">
                 <div class="contact-info">
                     <div class="contact-name" id="name-5">未登録</div>
                     <div class="contact-number" id="number-5">タップして確認</div>
                 </div>
             </button>
             
-            <button class="contact-btn" data-color="purple" id="btn-6" aria-label="連絡先6">
+            <button class="contact-btn" data-color="purple" id="btn-6">
                 <div class="contact-info">
                     <div class="contact-name" id="name-6">未登録</div>
                     <div class="contact-number" id="number-6">タップして確認</div>
@@ -248,29 +253,27 @@
     
     <div class="footer">
         Contact us<br>
-        <a href="mailto:mementomorikatsu@gmail.com?subject=ワンタップ通話アプリについて" aria-label="メールを送信">mementomorikatsu@gmail.com</a>
+        <a href="mailto:mementomorikatsu@gmail.com">mementomorikatsu@gmail.com</a>
     </div>
     
-    <!-- 編集モーダル -->
     <div id="editModal" class="modal-overlay">
         <div class="modal-content">
             <div class="input-group">
                 <label for="editName">表示名</label>
-                <input type="text" id="editName" placeholder="例: 家族" aria-label="表示名">
+                <input type="text" id="editName" placeholder="例: 家族">
             </div>
             <div class="input-group">
                 <label for="editNumber">電話番号</label>
-                <input type="tel" id="editNumber" placeholder="例: 09012345678" aria-label="電話番号">
+                <input type="tel" id="editNumber" placeholder="例: 09012345678">
             </div>
             <div class="modal-actions">
-                <button class="modal-btn cancel-btn" id="cancelBtn" aria-label="キャンセル">キャンセル</button>
-                <button class="modal-btn save-btn" id="saveBtn" aria-label="保存">保存</button>
+                <button class="modal-btn cancel-btn" id="cancelBtn">キャンセル</button>
+                <button class="modal-btn save-btn" id="saveBtn">保存</button>
             </div>
         </div>
     </div>
 
     <script>
-        // アプリケーションのメイン機能
         const VoiceCallApp = {
             currentContact: null,
             isCalling: false,
@@ -305,25 +308,13 @@
             },
             
             setupEventListeners() {
-                // 連絡先ボタン
                 for (let i = 1; i <= 6; i++) {
                     const btn = document.getElementById(`btn-${i}`);
-                    
-                    // タップ開始
-                    btn.addEventListener('touchstart', (e) => {
-                        this.handleTouchStart(i, e);
-                    });
-                    
-                    // タップ終了
-                    btn.addEventListener('touchend', (e) => {
-                        this.handleTouchEnd(i, e);
-                    });
-                    
-                    // ダブルタップ防止
+                    btn.addEventListener('touchstart', (e) => this.handleTouchStart(i, e));
+                    btn.addEventListener('touchend', (e) => this.handleTouchEnd(i, e));
                     btn.addEventListener('click', (e) => e.preventDefault());
                 }
                 
-                // モーダル操作
                 document.getElementById('saveBtn').addEventListener('click', () => this.saveContact());
                 document.getElementById('cancelBtn').addEventListener('click', () => this.closeEditModal());
             },
@@ -331,30 +322,21 @@
             handleTouchStart(contactId, e) {
                 e.preventDefault();
                 this.currentContact = contactId;
-                
-                // 長押しタイマー開始
-                this.touchTimer = setTimeout(() => {
-                    this.handleLongPress(contactId);
-                }, 1000); // 1秒で長押し判定
+                this.touchTimer = setTimeout(() => this.handleLongPress(contactId), 1000);
             },
             
             handleTouchEnd(contactId, e) {
                 e.preventDefault();
-                
-                // 長押しタイマーキャンセル
                 clearTimeout(this.touchTimer);
                 
-                // ダブルタップ判定
                 const currentTime = new Date().getTime();
                 const tapLength = currentTime - this.lastTapTime;
                 
                 if (this.tapCount > 0 && tapLength < 500) {
-                    // ダブルタップ
                     clearTimeout(this.touchTimer);
                     this.tapCount = 0;
                     this.handleDoubleTap(contactId);
                 } else {
-                    // シングルタップ
                     this.tapCount = 1;
                     this.lastTapTime = currentTime;
                     setTimeout(() => {
@@ -374,7 +356,7 @@
                     return;
                 }
                 
-                this.speak(name); // 名前だけを読み上げる
+                this.speak(name);
             },
             
             handleLongPress(contactId) {
@@ -417,7 +399,6 @@
                 
                 document.getElementById('editName').value = name === '未登録' ? '' : name;
                 document.getElementById('editNumber').value = number === 'タップして確認' ? '' : number;
-                
                 document.getElementById('editModal').style.display = 'flex';
             },
             
@@ -478,12 +459,11 @@
             
             announceReady() {
                 setTimeout(() => {
-                    this.speak('音声確認式ワンタップ通話アプリの準備ができました。連絡先ボタンをタップすると登録された名前を読み上げます。長押しで発信、ダブルタップで編集します。');
+                    this.speak('音声確認式ワンタップ通話アプリの準備ができました。連絡先ボタンをタップすると登録名を読み上げます。長押しで発信、ダブルタップで編集します。');
                 }, 800);
             }
         };
         
-        // アプリ起動
         document.addEventListener('DOMContentLoaded', () => {
             VoiceCallApp.init();
         });
