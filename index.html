@@ -43,7 +43,7 @@
         .main-content {
             flex: 1;
             overflow-y: auto;
-            padding: 90px 12px 80px; /* 上部のパディングを増やしてスペース確保 */
+            padding: 90px 12px 80px;
         }
         
         .container {
@@ -63,8 +63,8 @@
             align-items: center;
             position: relative;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            padding: 25px 10px; /* パディングを増やして高さを確保 */
-            min-height: 180px; /* ボタンの高さを大きく */
+            padding: 25px 10px;
+            min-height: 180px;
             border: none;
         }
         
@@ -322,6 +322,10 @@
                     // ダブルタップ防止
                     btn.addEventListener('click', (e) => e.preventDefault());
                 }
+                
+                // モーダル操作
+                document.getElementById('saveBtn').addEventListener('click', () => this.saveContact());
+                document.getElementById('cancelBtn').addEventListener('click', () => this.closeEditModal());
             },
             
             handleTouchStart(contactId, e) {
@@ -364,14 +368,13 @@
             
             handleSingleTap(contactId) {
                 const name = document.getElementById(`name-${contactId}`).textContent;
-                const number = document.getElementById(`number-${contactId}`).textContent;
                 
                 if (name === '未登録') {
                     this.openEditModal(contactId);
                     return;
                 }
                 
-                this.speak(`連絡先: ${name}、電話番号: ${number.split('').join(' ')}。発信するには長押ししてください。編集するにはダブルタップしてください。`);
+                this.speak(name); // 名前だけを読み上げる
             },
             
             handleLongPress(contactId) {
@@ -437,7 +440,7 @@
                 
                 this.updateContactDisplay(this.currentContact, name, number);
                 this.closeEditModal();
-                this.speak(`${name}の連絡先を保存しました`);
+                this.speak(`${name}を保存しました`);
             },
             
             updateContactDisplay(contactId, name, number) {
@@ -475,7 +478,7 @@
             
             announceReady() {
                 setTimeout(() => {
-                    this.speak('音声確認式ワンタップ通話アプリの準備ができました。連絡先ボタンをタップすると登録内容を読み上げます。長押しで発信、ダブルタップで編集します。');
+                    this.speak('音声確認式ワンタップ通話アプリの準備ができました。連絡先ボタンをタップすると登録された名前を読み上げます。長押しで発信、ダブルタップで編集します。');
                 }, 800);
             }
         };
