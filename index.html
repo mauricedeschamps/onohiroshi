@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>音声確認式直接通話アプリ</title>
+    <title>音声確認式ワンタップ通話</title>
     <style>
         * {
             margin: 0;
@@ -29,7 +28,8 @@
         .header {
             background: #0066CC;
             color: white;
-            padding: 0 20px;
+            text-align: center;
+            padding: 18px 0;
             font-size: 24px;
             font-weight: bold;
             position: fixed;
@@ -38,28 +38,12 @@
             z-index: 10;
             height: 70px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .header-title {
-            flex: 1;
-            text-align: center;
-        }
-        
-        .edit-btn {
-            background: transparent;
-            border: none;
-            color: white;
-            font-size: 20px;
-            padding: 10px;
         }
         
         .main-content {
             flex: 1;
             overflow-y: auto;
-            padding: 90px 12px 80px;
+            padding: 80px 12px 80px;
         }
         
         .container {
@@ -67,7 +51,7 @@
             grid-template-columns: 1fr 1fr;
             grid-template-rows: 1fr 1fr 1fr;
             gap: 12px;
-            min-height: calc(100% - 170px);
+            min-height: calc(100% - 160px);
         }
         
         .contact-btn {
@@ -79,8 +63,8 @@
             align-items: center;
             position: relative;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            padding: 25px 10px;
-            min-height: 180px;
+            padding: 20px 10px;
+            min-height: 150px;
             border: none;
         }
         
@@ -107,6 +91,24 @@
         .contact-number {
             font-size: 20px;
             word-break: break-all;
+        }
+        
+        .settings-btn {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #0066CC;
+            color: white;
+            border: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            z-index: 5;
         }
         
         .footer {
@@ -143,6 +145,7 @@
             text-align: center;
         }
         
+        /* 編集モーダル */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -169,13 +172,6 @@
         
         .input-group {
             margin-bottom: 20px;
-        }
-        
-        .input-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-size: 18px;
-            font-weight: bold;
         }
         
         .input-group input {
@@ -214,64 +210,50 @@
             background: #00AA55;
             color: white;
         }
-        
-        .contact-selector {
-            margin-bottom: 20px;
-        }
-        
-        .contact-selector select {
-            width: 100%;
-            padding: 12px;
-            font-size: 18px;
-            border-radius: 8px;
-            border: 2px solid #ddd;
-        }
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="header-title">音声確認式直接通話</div>
-        <button class="edit-btn" id="editModeBtn">編集</button>
-    </div>
+    <div class="header" aria-label="音声確認式ワンタップ通話">音声確認式ワンタップ通話</div>
     
     <div class="main-content">
         <div class="container">
-            <button class="contact-btn" data-color="red" id="btn-1">
+            <!-- 6つの連絡先ボタン -->
+            <button class="contact-btn" data-color="red" id="btn-1" aria-label="連絡先1">
                 <div class="contact-info">
                     <div class="contact-name" id="name-1">未登録</div>
                     <div class="contact-number" id="number-1">タップして確認</div>
                 </div>
             </button>
             
-            <button class="contact-btn" data-color="blue" id="btn-2">
+            <button class="contact-btn" data-color="blue" id="btn-2" aria-label="連絡先2">
                 <div class="contact-info">
                     <div class="contact-name" id="name-2">未登録</div>
                     <div class="contact-number" id="number-2">タップして確認</div>
                 </div>
             </button>
             
-            <button class="contact-btn" data-color="yellow" id="btn-3">
+            <button class="contact-btn" data-color="yellow" id="btn-3" aria-label="連絡先3">
                 <div class="contact-info">
                     <div class="contact-name" id="name-3">未登録</div>
                     <div class="contact-number" id="number-3">タップして確認</div>
                 </div>
             </button>
             
-            <button class="contact-btn" data-color="green" id="btn-4">
+            <button class="contact-btn" data-color="green" id="btn-4" aria-label="連絡先4">
                 <div class="contact-info">
                     <div class="contact-name" id="name-4">未登録</div>
                     <div class="contact-number" id="number-4">タップして確認</div>
                 </div>
             </button>
             
-            <button class="contact-btn" data-color="orange" id="btn-5">
+            <button class="contact-btn" data-color="orange" id="btn-5" aria-label="連絡先5">
                 <div class="contact-info">
                     <div class="contact-name" id="name-5">未登録</div>
                     <div class="contact-number" id="number-5">タップして確認</div>
                 </div>
             </button>
             
-            <button class="contact-btn" data-color="purple" id="btn-6">
+            <button class="contact-btn" data-color="purple" id="btn-6" aria-label="連絡先6">
                 <div class="contact-info">
                     <div class="contact-name" id="name-6">未登録</div>
                     <div class="contact-number" id="number-6">タップして確認</div>
@@ -280,48 +262,42 @@
         </div>
     </div>
     
+    <button class="settings-btn" id="settingsBtn" aria-label="設定">⚙️</button>
+    
     <div class="status-message" id="statusMessage"></div>
     
     <div class="footer">
-        Contact us<br>
-        <a href="mailto:mementomorikatsu@gmail.com">mementomorikatsu@gmail.com</a>
+        Contact me<br>
+        <a href="mailto:mementomorikatsu@gmail.com?subject=ワンタップ通話アプリについて" aria-label="メールを送信">mementomorikatsu@gmail.com</a>
     </div>
     
+    <!-- 編集モーダル -->
     <div id="editModal" class="modal-overlay">
         <div class="modal-content">
-            <div class="contact-selector">
-                <label for="contactSelect">編集する連絡先</label>
-                <select id="contactSelect">
-                    <option value="1">連絡先1</option>
-                    <option value="2">連絡先2</option>
-                    <option value="3">連絡先3</option>
-                    <option value="4">連絡先4</option>
-                    <option value="5">連絡先5</option>
-                    <option value="6">連絡先6</option>
-                </select>
-            </div>
-            
             <div class="input-group">
                 <label for="editName">表示名</label>
-                <input type="text" id="editName" placeholder="例: 家族">
+                <input type="text" id="editName" placeholder="例: 家族" aria-label="表示名">
             </div>
             <div class="input-group">
                 <label for="editNumber">電話番号</label>
-                <input type="tel" id="editNumber" placeholder="例: 09012345678">
+                <input type="tel" id="editNumber" placeholder="例: 09012345678" aria-label="電話番号">
             </div>
             <div class="modal-actions">
-                <button class="modal-btn cancel-btn" id="cancelBtn">キャンセル</button>
-                <button class="modal-btn save-btn" id="saveBtn">保存</button>
+                <button class="modal-btn cancel-btn" id="cancelBtn" aria-label="キャンセル">キャンセル</button>
+                <button class="modal-btn save-btn" id="saveBtn" aria-label="保存">保存</button>
             </div>
         </div>
     </div>
 
     <script>
+        // アプリケーションのメイン機能
         const VoiceCallApp = {
             currentContact: null,
             isCalling: false,
             speech: new (window.SpeechSynthesisUtterance || window.webkitSpeechSynthesisUtterance)(),
             touchTimer: null,
+            lastTapTime: 0,
+            tapCount: 0,
             
             init() {
                 this.setupSpeech();
@@ -349,44 +325,83 @@
             },
             
             setupEventListeners() {
-                // 通話ボタン
+                // 連絡先ボタン
                 for (let i = 1; i <= 6; i++) {
                     const btn = document.getElementById(`btn-${i}`);
-                    btn.addEventListener('touchstart', (e) => this.handleTouchStart(i, e));
-                    btn.addEventListener('touchend', (e) => this.handleTouchEnd(i, e));
+                    
+                    // タップ開始
+                    btn.addEventListener('touchstart', (e) => {
+                        this.handleTouchStart(i, e);
+                    });
+                    
+                    // タップ終了
+                    btn.addEventListener('touchend', (e) => {
+                        this.handleTouchEnd(i, e);
+                    });
+                    
+                    // ダブルタップ防止
                     btn.addEventListener('click', (e) => e.preventDefault());
                 }
                 
-                // 編集モードボタン
-                document.getElementById('editModeBtn').addEventListener('click', () => this.openEditModal());
+                // 設定ボタン
+                document.getElementById('settingsBtn').addEventListener('click', () => {
+                    this.speak('設定画面を開きます');
+                    // ここに設定機能を追加可能
+                });
                 
                 // モーダル操作
                 document.getElementById('saveBtn').addEventListener('click', () => this.saveContact());
                 document.getElementById('cancelBtn').addEventListener('click', () => this.closeEditModal());
-                document.getElementById('contactSelect').addEventListener('change', (e) => this.loadContactData(e.target.value));
             },
             
             handleTouchStart(contactId, e) {
                 e.preventDefault();
                 this.currentContact = contactId;
-                this.touchTimer = setTimeout(() => this.handleLongPress(contactId), 1000);
+                
+                // 長押しタイマー開始
+                this.touchTimer = setTimeout(() => {
+                    this.handleLongPress(contactId);
+                }, 1000); // 1秒で長押し判定
             },
             
             handleTouchEnd(contactId, e) {
                 e.preventDefault();
+                
+                // 長押しタイマーキャンセル
                 clearTimeout(this.touchTimer);
-                this.handleSingleTap(contactId);
+                
+                // ダブルタップ判定
+                const currentTime = new Date().getTime();
+                const tapLength = currentTime - this.lastTapTime;
+                
+                if (this.tapCount > 0 && tapLength < 500) {
+                    // ダブルタップ
+                    clearTimeout(this.touchTimer);
+                    this.tapCount = 0;
+                    this.handleDoubleTap(contactId);
+                } else {
+                    // シングルタップ
+                    this.tapCount = 1;
+                    this.lastTapTime = currentTime;
+                    setTimeout(() => {
+                        if (this.tapCount === 1) {
+                            this.handleSingleTap(contactId);
+                            this.tapCount = 0;
+                        }
+                    }, 500);
+                }
             },
             
             handleSingleTap(contactId) {
                 const name = document.getElementById(`name-${contactId}`).textContent;
+                const number = document.getElementById(`number-${contactId}`).textContent;
                 
                 if (name === '未登録') {
-                    this.speak('未登録の連絡先です');
+                    this.openEditModal(contactId);
                     return;
                 }
                 
-                this.speak(name);
+                this.speak(`連絡先: ${name}、電話番号: ${number.split('').join(' ')}。発信するには長押ししてください。編集するにはダブルタップしてください。`);
             },
             
             handleLongPress(contactId) {
@@ -394,7 +409,7 @@
                 const number = document.getElementById(`number-${contactId}`).textContent;
                 
                 if (name === '未登録') {
-                    this.speak('未登録の連絡先です');
+                    this.openEditModal(contactId);
                     return;
                 }
                 
@@ -405,41 +420,35 @@
                 this.vibrate([100, 50, 100]);
                 this.speak(`${name}に発信します`);
                 
-                // 直接発信する（通話画面を表示しない）
-                this.makePhoneCall(number);
-            },
-            
-            makePhoneCall(number) {
-                // WebRTCを使用して直接発信
-                // 注意: 実際にはこの方法はブラウザのセキュリティ制限に引っかかる可能性があります
-                // 代替案としてhidden iframeを使用
-                const iframe = document.createElement('iframe');
-                iframe.style.display = 'none';
-                iframe.src = `tel:${number}`;
-                document.body.appendChild(iframe);
-                
                 setTimeout(() => {
-                    document.body.removeChild(iframe);
+                    window.location.href = `tel:${number}`;
                     this.isCalling = false;
-                }, 3000);
+                }, 1000);
             },
             
-            openEditModal() {
-                document.getElementById('editModal').style.display = 'flex';
-                this.loadContactData(1);
+            handleDoubleTap(contactId) {
+                const name = document.getElementById(`name-${contactId}`).textContent;
+                
+                if (name === '未登録') {
+                    this.openEditModal(contactId);
+                } else {
+                    this.speak(`${name}を編集します`);
+                    this.openEditModal(contactId);
+                }
             },
             
-            loadContactData(contactId) {
+            openEditModal(contactId) {
                 this.currentContact = contactId;
                 const name = document.getElementById(`name-${contactId}`).textContent;
                 const number = document.getElementById(`number-${contactId}`).textContent;
                 
                 document.getElementById('editName').value = name === '未登録' ? '' : name;
                 document.getElementById('editNumber').value = number === 'タップして確認' ? '' : number;
+                
+                document.getElementById('editModal').style.display = 'flex';
             },
             
             saveContact() {
-                const contactId = this.currentContact;
                 const name = document.getElementById('editName').value.trim();
                 let number = document.getElementById('editNumber').value.trim().replace(/\D+/g, '');
                 
@@ -454,11 +463,11 @@
                 }
                 
                 const contactData = { name, number };
-                localStorage.setItem(`voice_call_contact_${contactId}`, JSON.stringify(contactData));
+                localStorage.setItem(`voice_call_contact_${this.currentContact}`, JSON.stringify(contactData));
                 
-                this.updateContactDisplay(contactId, name, number);
+                this.updateContactDisplay(this.currentContact, name, number);
                 this.closeEditModal();
-                this.speak(`${name}を保存しました`);
+                this.speak(`${name}の連絡先を保存しました`);
             },
             
             updateContactDisplay(contactId, name, number) {
@@ -496,11 +505,12 @@
             
             announceReady() {
                 setTimeout(() => {
-                    this.speak('音声確認式直接通話アプリの準備ができました。連絡先ボタンをタップすると登録名を読み上げます。長押しで直接発信します。編集はヘッダーの編集ボタンから行えます。');
+                    this.speak('音声確認式ワンタップ通話アプリの準備ができました。連絡先ボタンをタップすると登録内容を読み上げます。長押しで発信、ダブルタップで編集します。');
                 }, 800);
             }
         };
         
+        // アプリ起動
         document.addEventListener('DOMContentLoaded', () => {
             VoiceCallApp.init();
         });
