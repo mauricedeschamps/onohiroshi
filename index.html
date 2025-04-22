@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>音声確認式ワンタップ通話</title>
+    <title>音声確認式直接通話アプリ</title>
     <style>
         * {
             margin: 0;
@@ -28,7 +28,7 @@
         .header {
             background: #0066CC;
             color: white;
-            padding: 18px 0;
+            padding: 0 20px;
             font-size: 24px;
             font-weight: bold;
             position: fixed;
@@ -40,7 +40,6 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0 20px;
         }
         
         .header-title {
@@ -230,7 +229,7 @@
 </head>
 <body>
     <div class="header">
-        <div class="header-title">音声確認式ワンタップ通話</div>
+        <div class="header-title">音声確認式直接通話</div>
         <button class="edit-btn" id="editModeBtn">編集</button>
     </div>
     
@@ -405,15 +404,28 @@
                 this.vibrate([100, 50, 100]);
                 this.speak(`${name}に発信します`);
                 
+                // 直接発信する（通話画面を表示しない）
+                this.makePhoneCall(number);
+            },
+            
+            makePhoneCall(number) {
+                // WebRTCを使用して直接発信
+                // 注意: 実際にはこの方法はブラウザのセキュリティ制限に引っかかる可能性があります
+                // 代替案としてhidden iframeを使用
+                const iframe = document.createElement('iframe');
+                iframe.style.display = 'none';
+                iframe.src = `tel:${number}`;
+                document.body.appendChild(iframe);
+                
                 setTimeout(() => {
-                    window.location.href = `tel:${number}`;
+                    document.body.removeChild(iframe);
                     this.isCalling = false;
-                }, 1000);
+                }, 3000);
             },
             
             openEditModal() {
                 document.getElementById('editModal').style.display = 'flex';
-                this.loadContactData(1); // デフォルトで連絡先1を読み込み
+                this.loadContactData(1);
             },
             
             loadContactData(contactId) {
@@ -483,7 +495,7 @@
             
             announceReady() {
                 setTimeout(() => {
-                    this.speak('音声確認式ワンタップ通話アプリの準備ができました。連絡先ボタンをタップすると登録名を読み上げます。長押しで発信します。編集はヘッダーの編集ボタンから行えます。');
+                    this.speak('音声確認式直接通話アプリの準備ができました。連絡先ボタンをタップすると登録名を読み上げます。長押しで直接発信します。編集はヘッダーの編集ボタンから行えます。');
                 }, 800);
             }
         };
