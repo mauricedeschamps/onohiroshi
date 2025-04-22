@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>音声ガイド付き拡張電話帳</title>
+    <title>音声確認式直接通話アプリ</title>
     <style>
         * {
             margin: 0;
@@ -61,20 +62,15 @@
             padding: 90px 12px 80px;
         }
         
-        .category-container {
+        .container {
             display: grid;
             grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr 1fr;
             gap: 12px;
-            margin-bottom: 20px;
+            min-height: calc(100% - 170px);
         }
         
-        .contacts-container {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 12px;
-        }
-        
-        .category-btn, .contact-btn {
+        .contact-btn {
             background: white;
             border-radius: 20px;
             display: flex;
@@ -84,23 +80,16 @@
             position: relative;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
             padding: 25px 10px;
-            min-height: 100px;
+            min-height: 180px;
             border: none;
-            text-align: center;
         }
         
-        .category-btn {
-            min-height: 120px;
-            font-size: 20px;
-            font-weight: bold;
-        }
-        
-        .category-btn[data-color="red"] { background: #FF4444; color: white; }
-        .category-btn[data-color="blue"] { background: #4488FF; color: white; }
-        .category-btn[data-color="yellow"] { background: #FFCC00; color: #333; }
-        .category-btn[data-color="green"] { background: #00AA55; color: white; }
-        .category-btn[data-color="orange"] { background: #FF8800; color: white; }
-        .category-btn[data-color="purple"] { background: #AA44FF; color: white; }
+        .contact-btn[data-color="red"] { background: #FF4444; color: white; }
+        .contact-btn[data-color="blue"] { background: #4488FF; color: white; }
+        .contact-btn[data-color="yellow"] { background: #FFCC00; color: #333; }
+        .contact-btn[data-color="green"] { background: #00AA55; color: white; }
+        .contact-btn[data-color="orange"] { background: #FF8800; color: white; }
+        .contact-btn[data-color="purple"] { background: #AA44FF; color: white; }
         
         .contact-info {
             width: 90%;
@@ -109,27 +98,15 @@
         }
         
         .contact-name {
-            font-size: 20px;
+            font-size: 24px;
             font-weight: bold;
             margin-bottom: 8px;
             word-break: break-word;
         }
         
         .contact-number {
-            font-size: 16px;
+            font-size: 20px;
             word-break: break-all;
-        }
-        
-        .back-btn {
-            background: #333;
-            color: white;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 15px;
-            font-size: 18px;
-            font-weight: bold;
-            border: none;
-            width: 100%;
         }
         
         .footer {
@@ -201,7 +178,7 @@
             font-weight: bold;
         }
         
-        .input-group input, .input-group select {
+        .input-group input {
             width: 100%;
             padding: 16px;
             font-size: 18px;
@@ -238,66 +215,68 @@
             color: white;
         }
         
-        .add-contact-btn {
-            background: #0066CC;
-            color: white;
-            padding: 15px;
-            border-radius: 10px;
-            margin-top: 15px;
-            font-size: 18px;
-            font-weight: bold;
-            border: none;
-            width: 100%;
+        .contact-selector {
+            margin-bottom: 20px;
         }
         
-        .hidden {
-            display: none;
+        .contact-selector select {
+            width: 100%;
+            padding: 12px;
+            font-size: 18px;
+            border-radius: 8px;
+            border: 2px solid #ddd;
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <div class="header-title">音声ガイド付き電話帳</div>
+        <div class="header-title">音声確認式直接通話</div>
         <button class="edit-btn" id="editModeBtn">編集</button>
     </div>
     
     <div class="main-content">
-        <!-- カテゴリ選択画面 -->
-        <div id="categoryView">
-            <div class="category-container">
-                <button class="category-btn" data-color="red" id="category-1">
-                    議員
-                </button>
-                
-                <button class="category-btn" data-color="blue" id="category-2">
-                    市役所
-                </button>
-                
-                <button class="category-btn" data-color="yellow" id="category-3">
-                    知り合い
-                </button>
-                
-                <button class="category-btn" data-color="green" id="category-4">
-                    家族
-                </button>
-                
-                <button class="category-btn" data-color="orange" id="category-5">
-                    友達
-                </button>
-                
-                <button class="category-btn" data-color="purple" id="category-6">
-                    その他
-                </button>
-            </div>
-        </div>
-        
-        <!-- 連絡先一覧画面 -->
-        <div id="contactsView" class="hidden">
-            <button class="back-btn" id="backBtn">カテゴリに戻る</button>
-            <div class="contacts-container" id="contactsList">
-                <!-- 連絡先がここに動的に追加されます -->
-            </div>
-            <button class="add-contact-btn" id="addContactBtn">新しい連絡先を追加</button>
+        <div class="container">
+            <button class="contact-btn" data-color="red" id="btn-1">
+                <div class="contact-info">
+                    <div class="contact-name" id="name-1">未登録</div>
+                    <div class="contact-number" id="number-1">タップして確認</div>
+                </div>
+            </button>
+            
+            <button class="contact-btn" data-color="blue" id="btn-2">
+                <div class="contact-info">
+                    <div class="contact-name" id="name-2">未登録</div>
+                    <div class="contact-number" id="number-2">タップして確認</div>
+                </div>
+            </button>
+            
+            <button class="contact-btn" data-color="yellow" id="btn-3">
+                <div class="contact-info">
+                    <div class="contact-name" id="name-3">未登録</div>
+                    <div class="contact-number" id="number-3">タップして確認</div>
+                </div>
+            </button>
+            
+            <button class="contact-btn" data-color="green" id="btn-4">
+                <div class="contact-info">
+                    <div class="contact-name" id="name-4">未登録</div>
+                    <div class="contact-number" id="number-4">タップして確認</div>
+                </div>
+            </button>
+            
+            <button class="contact-btn" data-color="orange" id="btn-5">
+                <div class="contact-info">
+                    <div class="contact-name" id="name-5">未登録</div>
+                    <div class="contact-number" id="number-5">タップして確認</div>
+                </div>
+            </button>
+            
+            <button class="contact-btn" data-color="purple" id="btn-6">
+                <div class="contact-info">
+                    <div class="contact-name" id="name-6">未登録</div>
+                    <div class="contact-number" id="number-6">タップして確認</div>
+                </div>
+            </button>
         </div>
     </div>
     
@@ -308,53 +287,45 @@
         <a href="mailto:mementomorikatsu@gmail.com">mementomorikatsu@gmail.com</a>
     </div>
     
-    <!-- 連絡先編集モーダル -->
     <div id="editModal" class="modal-overlay">
         <div class="modal-content">
-            <div class="input-group">
-                <label for="editCategory">カテゴリ</label>
-                <select id="editCategory">
-                    <option value="1">議員</option>
-                    <option value="2">市役所</option>
-                    <option value="3">知り合い</option>
-                    <option value="4">家族</option>
-                    <option value="5">友達</option>
-                    <option value="6">その他</option>
+            <div class="contact-selector">
+                <label for="contactSelect">編集する連絡先</label>
+                <select id="contactSelect">
+                    <option value="1">連絡先1</option>
+                    <option value="2">連絡先2</option>
+                    <option value="3">連絡先3</option>
+                    <option value="4">連絡先4</option>
+                    <option value="5">連絡先5</option>
+                    <option value="6">連絡先6</option>
                 </select>
             </div>
             
             <div class="input-group">
                 <label for="editName">表示名</label>
-                <input type="text" id="editName" placeholder="例: 田中太郎">
+                <input type="text" id="editName" placeholder="例: 家族">
             </div>
-            
             <div class="input-group">
                 <label for="editNumber">電話番号</label>
                 <input type="tel" id="editNumber" placeholder="例: 09012345678">
             </div>
-            
             <div class="modal-actions">
                 <button class="modal-btn cancel-btn" id="cancelBtn">キャンセル</button>
                 <button class="modal-btn save-btn" id="saveBtn">保存</button>
-            </div>
-            
-            <div id="deleteSection" class="hidden">
-                <button class="modal-btn cancel-btn" id="deleteBtn" style="margin-top: 15px; width: 100%;">この連絡先を削除</button>
             </div>
         </div>
     </div>
 
     <script>
         const VoiceCallApp = {
-            currentCategory: null,
             currentContact: null,
             isCalling: false,
-            isEditing: false,
             speech: new (window.SpeechSynthesisUtterance || window.webkitSpeechSynthesisUtterance)(),
             touchTimer: null,
             
             init() {
                 this.setupSpeech();
+                this.loadContacts();
                 this.setupEventListeners();
                 this.announceReady();
             },
@@ -365,78 +336,34 @@
                 this.speech.volume = 1;
             },
             
-            setupEventListeners() {
-                // カテゴリボタン
+            loadContacts() {
                 for (let i = 1; i <= 6; i++) {
-                    document.getElementById(`category-${i}`).addEventListener('click', () => this.showContacts(i));
+                    const saved = localStorage.getItem(`voice_call_contact_${i}`);
+                    if (saved) {
+                        const contact = JSON.parse(saved);
+                        this.updateContactDisplay(i, contact.name, contact.number);
+                    } else {
+                        this.updateContactDisplay(i, '未登録', 'タップして確認');
+                    }
+                }
+            },
+            
+            setupEventListeners() {
+                // 通話ボタン
+                for (let i = 1; i <= 6; i++) {
+                    const btn = document.getElementById(`btn-${i}`);
+                    btn.addEventListener('touchstart', (e) => this.handleTouchStart(i, e));
+                    btn.addEventListener('touchend', (e) => this.handleTouchEnd(i, e));
+                    btn.addEventListener('click', (e) => e.preventDefault());
                 }
                 
-                // 戻るボタン
-                document.getElementById('backBtn').addEventListener('click', () => this.showCategories());
-                
                 // 編集モードボタン
-                document.getElementById('editModeBtn').addEventListener('click', () => this.toggleEditMode());
-                
-                // 連絡先追加ボタン
-                document.getElementById('addContactBtn').addEventListener('click', () => this.openAddContactModal());
+                document.getElementById('editModeBtn').addEventListener('click', () => this.openEditModal());
                 
                 // モーダル操作
                 document.getElementById('saveBtn').addEventListener('click', () => this.saveContact());
                 document.getElementById('cancelBtn').addEventListener('click', () => this.closeEditModal());
-                document.getElementById('deleteBtn').addEventListener('click', () => this.deleteContact());
-            },
-            
-            showCategories() {
-                document.getElementById('categoryView').classList.remove('hidden');
-                document.getElementById('contactsView').classList.add('hidden');
-                this.speak('カテゴリを選択してください');
-            },
-            
-            showContacts(categoryId) {
-                this.currentCategory = categoryId;
-                const container = document.getElementById('contactsList');
-                container.innerHTML = '';
-                
-                // カテゴリ名を取得
-                const categoryName = document.getElementById(`category-${categoryId}`).textContent.trim();
-                this.speak(`${categoryName}の連絡先一覧`);
-                
-                // 連絡先を読み込む
-                const contacts = this.getContactsByCategory(categoryId);
-                
-                if (contacts.length === 0) {
-                    const emptyMsg = document.createElement('div');
-                    emptyMsg.textContent = '登録された連絡先がありません';
-                    emptyMsg.style.textAlign = 'center';
-                    emptyMsg.style.padding = '20px';
-                    container.appendChild(emptyMsg);
-                    this.speak('登録された連絡先がありません');
-                } else {
-                    contacts.forEach((contact, index) => {
-                        const btn = document.createElement('button');
-                        btn.className = 'contact-btn';
-                        btn.dataset.color = this.getColorForCategory(categoryId);
-                        btn.innerHTML = `
-                            <div class="contact-info">
-                                <div class="contact-name">${contact.name}</div>
-                                <div class="contact-number">${contact.number}</div>
-                            </div>
-                        `;
-                        
-                        btn.addEventListener('touchstart', (e) => this.handleTouchStart(contact.id, e));
-                        btn.addEventListener('touchend', (e) => this.handleTouchEnd(contact.id, e));
-                        btn.addEventListener('click', (e) => e.preventDefault());
-                        
-                        if (this.isEditing) {
-                            btn.addEventListener('dblclick', () => this.openEditContactModal(contact.id));
-                        }
-                        
-                        container.appendChild(btn);
-                    });
-                }
-                
-                document.getElementById('categoryView').classList.add('hidden');
-                document.getElementById('contactsView').classList.remove('hidden');
+                document.getElementById('contactSelect').addEventListener('change', (e) => this.loadContactData(e.target.value));
             },
             
             handleTouchStart(contactId, e) {
@@ -448,31 +375,44 @@
             handleTouchEnd(contactId, e) {
                 e.preventDefault();
                 clearTimeout(this.touchTimer);
-                
-                if (!this.isCalling) {
-                    this.handleSingleTap(contactId);
-                }
+                this.handleSingleTap(contactId);
             },
             
             handleSingleTap(contactId) {
-                const contact = this.getContactById(contactId);
-                this.speak(contact.name);
+                const name = document.getElementById(`name-${contactId}`).textContent;
+                
+                if (name === '未登録') {
+                    this.speak('未登録の連絡先です');
+                    return;
+                }
+                
+                this.speak(name);
             },
             
             handleLongPress(contactId) {
-                const contact = this.getContactById(contactId);
+                const name = document.getElementById(`name-${contactId}`).textContent;
+                const number = document.getElementById(`number-${contactId}`).textContent;
+                
+                if (name === '未登録') {
+                    this.speak('未登録の連絡先です');
+                    return;
+                }
                 
                 if (this.isCalling) return;
                 
                 this.isCalling = true;
-                this.showStatusMessage(`${contact.name}に発信します`);
+                this.showStatusMessage(`${name}に発信します`);
                 this.vibrate([100, 50, 100]);
-                this.speak(`${contact.name}に発信します`);
+                this.speak(`${name}に発信します`);
                 
-                this.makePhoneCall(contact.number);
+                // 直接発信する（通話画面を表示しない）
+                this.makePhoneCall(number);
             },
             
             makePhoneCall(number) {
+                // WebRTCを使用して直接発信
+                // 注意: 実際にはこの方法はブラウザのセキュリティ制限に引っかかる可能性があります
+                // 代替案としてhidden iframeを使用
                 const iframe = document.createElement('iframe');
                 iframe.style.display = 'none';
                 iframe.src = `tel:${number}`;
@@ -481,52 +421,25 @@
                 setTimeout(() => {
                     document.body.removeChild(iframe);
                     this.isCalling = false;
-                    this.speak('通話を終了しました。連絡先一覧に戻ります');
-                    this.showContacts(this.currentCategory);
                 }, 3000);
             },
             
-            toggleEditMode() {
-                this.isEditing = !this.isEditing;
-                document.getElementById('editModeBtn').textContent = this.isEditing ? '通常' : '編集';
-                this.speak(this.isEditing ? '編集モードになりました。連絡先をダブルタップで編集できます' : '通常モードになりました');
-                
-                if (!this.isEditing && document.getElementById('contactsView').classList.contains('hidden')) {
-                    this.speak('カテゴリを選択してください');
-                } else if (!this.isEditing) {
-                    this.speak('連絡先一覧です');
-                }
+            openEditModal() {
+                document.getElementById('editModal').style.display = 'flex';
+                this.loadContactData(1);
             },
             
-            openAddContactModal() {
-                document.getElementById('editModal').style.display = 'flex';
-                document.getElementById('deleteSection').classList.add('hidden');
-                
-                // 現在のカテゴリを選択
-                document.getElementById('editCategory').value = this.currentCategory;
-                document.getElementById('editName').value = '';
-                document.getElementById('editNumber').value = '';
-                
-                this.currentContact = null;
-                this.speak('新しい連絡先を追加します');
-            },
-            
-            openEditContactModal(contactId) {
-                document.getElementById('editModal').style.display = 'flex';
-                document.getElementById('deleteSection').classList.remove('hidden');
-                
-                const contact = this.getContactById(contactId);
+            loadContactData(contactId) {
                 this.currentContact = contactId;
+                const name = document.getElementById(`name-${contactId}`).textContent;
+                const number = document.getElementById(`number-${contactId}`).textContent;
                 
-                document.getElementById('editCategory').value = contact.category;
-                document.getElementById('editName').value = contact.name;
-                document.getElementById('editNumber').value = contact.number;
-                
-                this.speak(`${contact.name}を編集します`);
+                document.getElementById('editName').value = name === '未登録' ? '' : name;
+                document.getElementById('editNumber').value = number === 'タップして確認' ? '' : number;
             },
             
             saveContact() {
-                const category = document.getElementById('editCategory').value;
+                const contactId = this.currentContact;
                 const name = document.getElementById('editName').value.trim();
                 let number = document.getElementById('editNumber').value.trim().replace(/\D+/g, '');
                 
@@ -540,77 +453,21 @@
                     return;
                 }
                 
-                const contacts = JSON.parse(localStorage.getItem('voice_call_contacts') || '[]');
+                const contactData = { name, number };
+                localStorage.setItem(`voice_call_contact_${contactId}`, JSON.stringify(contactData));
                 
-                if (this.currentContact) {
-                    // 既存の連絡先を更新
-                    const index = contacts.findIndex(c => c.id === this.currentContact);
-                    if (index !== -1) {
-                        contacts[index] = { 
-                            id: this.currentContact, 
-                            category, 
-                            name, 
-                            number 
-                        };
-                    }
-                } else {
-                    // 新しい連絡先を追加
-                    const newId = contacts.length > 0 ? Math.max(...contacts.map(c => c.id)) + 1 : 1;
-                    contacts.push({ 
-                        id: newId, 
-                        category, 
-                        name, 
-                        number 
-                    });
-                }
-                
-                localStorage.setItem('voice_call_contacts', JSON.stringify(contacts));
+                this.updateContactDisplay(contactId, name, number);
                 this.closeEditModal();
-                
-                if (this.currentContact) {
-                    this.speak(`${name}を更新しました`);
-                } else {
-                    this.speak(`${name}を追加しました`);
-                }
-                
-                // 現在のビューを更新
-                this.showContacts(this.currentCategory);
+                this.speak(`${name}を保存しました`);
             },
             
-            deleteContact() {
-                if (!confirm('本当にこの連絡先を削除しますか？')) {
-                    this.speak('削除をキャンセルしました');
-                    return;
-                }
-                
-                const contacts = JSON.parse(localStorage.getItem('voice_call_contacts') || '[]');
-                const updatedContacts = contacts.filter(c => c.id !== this.currentContact);
-                localStorage.setItem('voice_call_contacts', JSON.stringify(updatedContacts));
-                
-                this.closeEditModal();
-                this.speak('連絡先を削除しました');
-                this.showContacts(this.currentCategory);
+            updateContactDisplay(contactId, name, number) {
+                document.getElementById(`name-${contactId}`).textContent = name;
+                document.getElementById(`number-${contactId}`).textContent = number;
             },
             
             closeEditModal() {
                 document.getElementById('editModal').style.display = 'none';
-            },
-            
-            getContactsByCategory(categoryId) {
-                const contacts = JSON.parse(localStorage.getItem('voice_call_contacts') || '[]');
-                return contacts
-                    .filter(c => c.category === String(categoryId))
-                    .sort((a, b) => a.name.localeCompare(b.name, 'ja'));
-            },
-            
-            getContactById(contactId) {
-                const contacts = JSON.parse(localStorage.getItem('voice_call_contacts') || '[]');
-                return contacts.find(c => c.id === contactId);
-            },
-            
-            getColorForCategory(categoryId) {
-                const colors = ['red', 'blue', 'yellow', 'green', 'orange', 'purple'];
-                return colors[categoryId - 1] || 'blue';
             },
             
             showStatusMessage(message) {
@@ -639,7 +496,7 @@
             
             announceReady() {
                 setTimeout(() => {
-                    this.speak('音声ガイド付き電話帳アプリの準備ができました。カテゴリを選択すると、そのカテゴリの連絡先が表示されます。連絡先をタップすると登録名を読み上げ、長押しで発信します。編集モードに切り替えると、連絡先の追加や編集ができます。');
+                    this.speak('音声確認式直接通話アプリの準備ができました。連絡先ボタンをタップすると登録名を読み上げます。長押しで直接発信します。編集はヘッダーの編集ボタンから行えます。');
                 }, 800);
             }
         };
