@@ -315,7 +315,53 @@
         </div>
     </div>
 
+
     <script>
+    const VoiceCallApp = {
+        // ...（他のコードはそのまま）...
+        
+        loadContacts() {
+            // 初期カテゴリ名を設定（表示用）
+            const displayNames = ['議員', '市役所', '知人', '家族', '友達', 'その他'];
+            // 音声用カテゴリ名（「知人」だけ「ちじん」に）
+            const speechNames = ['議員', '市役所', 'ちじん', '家族', '友達', 'その他'];
+            
+            displayNames.forEach((name, index) => {
+                const categoryId = index + 1;
+                const saved = localStorage.getItem(`voice_call_category_${categoryId}`);
+                
+                if (!saved) {
+                    // 初回起動時にカテゴリデータを保存
+                    localStorage.setItem(`voice_call_category_${categoryId}`, JSON.stringify({
+                        displayName: name,  // 表示用名
+                        speechName: speechNames[index],  // 音声用名
+                        contacts: []
+                    }));
+                }
+                
+                this.updateCategoryDisplay(categoryId, name);
+            });
+        },
+
+        handleSingleTapCategory(categoryId) {
+            const categoryData = JSON.parse(localStorage.getItem(`voice_call_category_${categoryId}`));
+            // 音声読み上げではspeechNameを使用
+            this.speak(categoryData.speechName + "カテゴリ");
+            this.showSubcategories(categoryId, categoryData.displayName, categoryData.contacts);
+        },
+
+        handleLongPress(categoryId) {
+            const categoryData = JSON.parse(localStorage.getItem(`voice_call_category_${categoryId}`));
+            // 音声読み上げではspeechNameを使用
+            this.speak(`${categoryData.speechName}カテゴリを選択しました。登録されている連絡先は${categoryData.contacts.length}件です。`);
+        },
+        
+        // ...（他のコードはそのまま）...
+    };
+</script>
+
+
+<script>
         const VoiceCallApp = {
             currentContact: null,
             isCalling: false,
